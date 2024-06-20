@@ -1,0 +1,10 @@
+services:
+  python:
+    entrypoint:
+      - /usr/local/bin/python
+      - /hashbrowns/python/hashbrowns.py
+    image: python:3.12-slim
+    init: true
+    volumes:
+      - ./:/hashbrowns
+    working_dir: /hashbrowns

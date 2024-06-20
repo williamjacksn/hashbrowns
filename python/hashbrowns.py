@@ -8,7 +8,7 @@ def parse_args():
     parser.add_argument('-u', '--username', default='williamjackson')
     parser.add_argument('-l', '--length', type=int, default=1)
     parser.add_argument('-s', '--start', default='')
-    parser.add_argument('-b', '--best', default='z'*64)
+    parser.add_argument('-b', '--best', default='f'*64)
     return parser.parse_args()
 
 
@@ -16,7 +16,7 @@ def main():
     args = parse_args()
     base64_chars = '+/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
     best = args.best
-    for i, x in enumerate(itertools.permutations(base64_chars, args.length)):
+    for i, x in enumerate(itertools.product(base64_chars, repeat=args.length)):
         suffix = ''.join(x)
         value = f'{args.username}/{suffix}'
         if i % 500000 == 0:

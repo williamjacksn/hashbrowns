@@ -9,14 +9,14 @@ const base64_chars = "+/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 func appendAndSend(prefix string, num_to_append int, channel chan string, close_channel bool) {
 	for _, c := range base64_chars {
 		value := prefix + string(c)
-		if (num_to_append < 2) {
+		if num_to_append < 2 {
 			channel <- value
 		} else {
 			appendAndSend(value, num_to_append-1, channel, false)
 		}
 	}
 
-	if (close_channel) {
+	if close_channel {
 		close(channel)
 	}
 }
@@ -43,12 +43,12 @@ func main() {
 	count := 0
 	for value := range value_channel {
 		count++
-		if (count % 100000 == 0) {
+		if count%100000 == 0 {
 			fmt.Print(value + "\r")
 		}
 		sha := sha256.Sum256([]byte(value))
 		sha_str := fmt.Sprintf("%x", sha)
-		if (sha_str < best) {
+		if sha_str < best {
 			fmt.Println(value, formatSha(sha_str))
 			best = sha_str
 		}

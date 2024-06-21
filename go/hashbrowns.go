@@ -5,44 +5,44 @@ import "flag"
 import "fmt"
 import "sync"
 
-const base64_chars = "+/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const alphabet = "+/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
-type ValueWithHash struct {
+type valueWithHash struct {
 	value, hash string
 }
 
-func GenerateValueAndSend(prefix string, num_to_append int, channel chan string, close_channel bool) {
-	for _, c := range base64_chars {
+func generateValueAndSend(prefix string, numToAppend int, channel chan string, closeChannel bool) {
+	for _, c := range alphabet {
 		value := prefix + string(c)
-		if num_to_append < 2 {
+		if numToAppend < 2 {
 			channel <- value
 		} else {
-			GenerateValueAndSend(value, num_to_append-1, channel, false)
+			generateValueAndSend(value, numToAppend-1, channel, false)
 		}
 	}
 
-	if close_channel {
+	if closeChannel {
 		close(channel)
 	}
 }
 
-func ReceiveValue(valueChannel chan string, valueWithHashChannel chan ValueWithHash) {
+func receiveValue(valueChannel chan string, valueWithHashChannel chan valueWithHash) {
 	var wg sync.WaitGroup
 	for value := range valueChannel {
 		wg.Add(1)
 		go func(){
 			defer wg.Done()
-			CalculateHashAndSend(value, valueWithHashChannel)
+			calculateHashAndSend(value, valueWithHashChannel)
 		}()
 	}
 	wg.Wait()
 	close(valueWithHashChannel)
 }
 
-func CalculateHashAndSend(value string, hashChannel chan ValueWithHash) {
+func calculateHashAndSend(value string, hashChannel chan valueWithHash) {
 	sha := sha256.Sum256([]byte(value))
 	shaString := fmt.Sprintf("%x", sha)
-	result := ValueWithHash{value, shaString}
+	result := valueWithHash{value, shaString}
 	hashChannel <- result
 }
 
@@ -59,11 +59,11 @@ func main() {
 	flag.Parse()
 
 	valueChannel := make(chan string)
-	valueWithHashChannel := make(chan ValueWithHash)
+	valueWithHashChannel := make(chan valueWithHash)
 
 	startingPrefix := username + "/"
-	go GenerateValueAndSend(startingPrefix, length, valueChannel, true)
-	go ReceiveValue(valueChannel, valueWithHashChannel)
+	go generateValueAndSend(startingPrefix, length, valueChannel, true)
+	go receiveValue(valueChannel, valueWithHashChannel)
 
 	best := "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 

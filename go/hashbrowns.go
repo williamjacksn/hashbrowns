@@ -3,22 +3,47 @@ package main
 import "crypto/sha256"
 import "flag"
 import "fmt"
+import "sync"
 
 const base64_chars = "+/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
-func appendAndSend(prefix string, num_to_append int, channel chan string, close_channel bool) {
+type ValueWithHash struct {
+	value, hash string
+}
+
+func GenerateValueAndSend(prefix string, num_to_append int, channel chan string, close_channel bool) {
 	for _, c := range base64_chars {
 		value := prefix + string(c)
 		if num_to_append < 2 {
 			channel <- value
 		} else {
-			appendAndSend(value, num_to_append-1, channel, false)
+			GenerateValueAndSend(value, num_to_append-1, channel, false)
 		}
 	}
 
 	if close_channel {
 		close(channel)
 	}
+}
+
+func ReceiveValue(valueChannel chan string, valueWithHashChannel chan ValueWithHash) {
+	var wg sync.WaitGroup
+	for value := range valueChannel {
+		wg.Add(1)
+		go func(){
+			defer wg.Done()
+			CalculateHashAndSend(value, valueWithHashChannel)
+		}()
+	}
+	wg.Wait()
+	close(valueWithHashChannel)
+}
+
+func CalculateHashAndSend(value string, hashChannel chan ValueWithHash) {
+	sha := sha256.Sum256([]byte(value))
+	shaString := fmt.Sprintf("%x", sha)
+	result := ValueWithHash{value, shaString}
+	hashChannel <- result
 }
 
 func formatSha(sha string) string {
@@ -33,25 +58,26 @@ func main() {
 	flag.StringVar(&username, "username", "williamjackson", "")
 	flag.Parse()
 
-	value_channel := make(chan string)
+	valueChannel := make(chan string)
+	valueWithHashChannel := make(chan ValueWithHash)
 
-	starting_prefix := username + "/"
-	go appendAndSend(starting_prefix, length, value_channel, true)
+	startingPrefix := username + "/"
+	go GenerateValueAndSend(startingPrefix, length, valueChannel, true)
+	go ReceiveValue(valueChannel, valueWithHashChannel)
 
 	best := "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 	count := 0
-	for value := range value_channel {
+	for valueWithHash := range valueWithHashChannel {
 		count++
 		if count%100000 == 0 {
-			fmt.Print(value + "\r")
+			fmt.Print(valueWithHash.value + "\r")
 		}
-		sha := sha256.Sum256([]byte(value))
-		sha_str := fmt.Sprintf("%x", sha)
-		if sha_str < best {
-			fmt.Println(value, formatSha(sha_str))
-			best = sha_str
+		if valueWithHash.hash < best {
+			fmt.Println(valueWithHash.value, formatSha(valueWithHash.hash))
+			best = valueWithHash.hash
 		}
 	}
+
 	fmt.Println()
 }

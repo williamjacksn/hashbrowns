@@ -21,6 +21,11 @@ func appendAndSend(prefix string, num_to_append int, channel chan string, close_
 	}
 }
 
+func formatSha(sha string) string {
+	formatted := sha[0:8] + " " + sha[8:16] + " " + sha[16:24] + " " + sha[24:32] + " " + sha[32:40] + " " + sha[40:48] + " " + sha[48:56] + " " + sha[56:]
+	return formatted
+}
+
 func main() {
 	var username string
 	var length int
@@ -35,11 +40,16 @@ func main() {
 
 	best := "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
+	count := 0
 	for value := range value_channel {
+		count++
+		if (count % 100000 == 0) {
+			fmt.Print(value + "\r")
+		}
 		sha := sha256.Sum256([]byte(value))
 		sha_str := fmt.Sprintf("%x", sha)
 		if (sha_str < best) {
-			fmt.Println(value, sha_str)
+			fmt.Println(value, formatSha(sha_str))
 			best = sha_str
 		}
 	}

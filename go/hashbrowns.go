@@ -27,9 +27,9 @@ func formatSha(sha string) string {
 }
 
 func main() {
-	var username string
 	var length int
 	flag.IntVar(&length, "length", 1, "")
+	var username string
 	flag.StringVar(&username, "username", "williamjackson", "")
 	flag.Parse()
 

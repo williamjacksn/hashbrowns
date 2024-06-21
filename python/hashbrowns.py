@@ -12,6 +12,10 @@ def parse_args():
     return parser.parse_args()
 
 
+def format_sha(sha: str) -> str:
+    return sha[0:8] + ' ' + sha[8:16] + ' ' + sha[16:24] + ' ' + sha[24:32] + ' ' + sha[32:40] + ' ' + sha[40:48] + ' ' + sha[48:56] + ' ' + sha[56:]
+
+
 def main():
     args = parse_args()
     base64_chars = '+/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
@@ -25,7 +29,7 @@ def main():
             sha = hashlib.sha256(value.encode()).hexdigest()
             if sha < best:
                 best = sha
-                print(value, sha)
+                print(value, format_sha(sha))
 
 
 if __name__ == '__main__':

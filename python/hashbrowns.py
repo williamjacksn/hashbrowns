@@ -13,7 +13,7 @@ def parse_args():
 
 
 def format_sha(sha: str) -> str:
-    return sha[0:8] + ' ' + sha[8:16] + ' ' + sha[16:24] + ' ' + sha[24:32] + ' ' + sha[32:40] + ' ' + sha[40:48] + ' ' + sha[48:56] + ' ' + sha[56:]
+    return f'{sha[0:8]} {sha[8:16]} {sha[16:24]} {sha[24:32]} {sha[32:40]} {sha[40:48]} {sha[48:56]} {sha[56:]}'
 
 
 def main():

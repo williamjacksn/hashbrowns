@@ -6,7 +6,7 @@ services:
       - /hashbrowns/go/hashbrowns.go
     environment:
       GOPATH: /hashbrowns/go
-    image: golang:1.22
+    image: golang:1.23
     init: true
     volumes:
       - ./:/hashbrowns

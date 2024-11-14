@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.13-slim
 FROM golang:1.23
 
 # This file is present to facilitate Dependabot notifications
